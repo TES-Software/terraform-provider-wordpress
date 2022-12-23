@@ -2,6 +2,7 @@ package wordpress
 
 import (
 	"context"
+  "os"
 
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -39,12 +40,50 @@ func (p *wordpressProvider) Metadata(ctx context.Context, req provider.MetadataR
 func (p *wordpressProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
   var data wordpressProviderModel
 
+  user := os.Getenv("WP_USER")
+  endpoint := os.Getenv("WP_ENDPOINT")
+  password := os.Getenv("WP_PASSWORD")
+
   resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
-  endpoint := data.Endpoint.ValueString()
-  user := data.User.ValueString()
-  password := data.Password.ValueString()
+  if data.Endpoint.ValueString() != "" {
+    endpoint = data.Endpoint.ValueString()
+  }
 
+  if data.User.ValueString() != "" {
+    user = data.User.ValueString()
+  }
+
+  if data.Password.ValueString() != "" {
+    password = data.Password.ValueString()
+  }
+
+  if endpoint == "" {
+    resp.Diagnostics.AddError(
+      "Missing Endpoint Configuration",
+      "While configuring the provider, the Endpoint was not found in "+
+      "the WP_ENDPOINT environment variable or provider "+
+      "configuration block endpoint attribute.",
+    )
+  }
+
+  if user == "" {
+    resp.Diagnostics.AddError(
+      "Missing User Configuration",
+      "While configuring the provider, the User was not found in "+
+      "the WP_USER environment variable or provider "+
+      "configuration block user attribute.",
+    )
+  }
+
+  if password == "" {
+    resp.Diagnostics.AddError(
+      "Missing Password Configuration",
+      "While configuring the provider, the Password was not found in "+
+      "the WP_PASSWORD environment variable or provider "+
+      "configuration block password attribute.",
+    )
+  }
   client := wcl.NewClient(&wcl.Options{
     BaseAPIURL: endpoint,
     Username: user,
@@ -57,13 +96,14 @@ func (p *wordpressProvider) Schema(ctx context.Context, req provider.SchemaReque
   resp.Schema = schema.Schema{
     Attributes: map[string]schema.Attribute{
       "password": schema.StringAttribute{
-        Required: true,
+        Sensitive: true,
+        Optional: true,
       },
       "user": schema.StringAttribute{
-        Required: true,
+        Optional: true,
       },
       "endpoint": schema.StringAttribute{
-        Required: true,
+        Optional: true,
       },
     },
   }

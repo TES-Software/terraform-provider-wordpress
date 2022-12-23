@@ -6,12 +6,19 @@ import (
   "strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
   "github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
   "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
   wcl "github.com/sogko/go-wordpress"
+)
+
+var (
+  _ resource.Resource = &UserResource{}
+  _ resource.ResourceWithConfigure = &UserResource{}
+  _ resource.ResourceWithImportState = &UserResource{}
 )
 
 type UserResource struct {
@@ -223,11 +230,19 @@ func (u *UserResource) Update(ctx context.Context, req resource.UpdateRequest, r
   }
 }
 
+func (u *UserResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+  resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
 func setUserModel(data *UserResourceModel, wu *wcl.User) {
   sid := strconv.Itoa(wu.ID)
 
   if sid != "" {
     data.ID = types.StringValue(sid)
+  }
+
+  if wu.Email != "" {
+    data.Email = types.StringValue(wu.Email)
   }
 
   if wu.Name != "" {

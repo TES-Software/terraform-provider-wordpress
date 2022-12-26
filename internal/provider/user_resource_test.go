@@ -1,4 +1,4 @@
-package wordpress
+package provider
 
 import (
   "testing"

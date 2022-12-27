@@ -11,8 +11,12 @@ import (
 // Generate the Terraform provider documentation using `tfplugindocs`:
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
+var (
+  version string = "dev"
+)
+
 func main() {
-  err :=providerserver.Serve(context.Background(), provider.New, providerserver.ServeOpts{
+  err :=providerserver.Serve(context.Background(), provider.New(version), providerserver.ServeOpts{
     Address: "registry.terrafomr.io/yyamanoi1222/wordpress",
   })
 

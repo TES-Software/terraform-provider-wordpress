@@ -26,9 +26,11 @@ type wordpressProviderModel struct {
   Password types.String `tfsdk:"password"`
 }
 
-func New() provider.Provider {
-  return &wordpressProvider{
-    version: "0.0.1",
+func New(version string) func() provider.Provider {
+  return func() provider.Provider {
+    return &wordpressProvider{
+      version: version,
+    }
   }
 }
 

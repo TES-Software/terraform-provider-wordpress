@@ -1,4 +1,4 @@
-module github.com/yyamanoi1222/terraform-provider-wordpress
+module github.com/tes-software/terraform-provider-wordpress
 
 go 1.18
 

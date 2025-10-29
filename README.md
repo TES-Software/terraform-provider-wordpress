@@ -1,2 +1,2 @@
 # terraform-provider-wordpress
-https://registry.terraform.io/providers/yyamanoi1222/wordpress
+https://registry.terraform.io/providers/tes-software/wordpress

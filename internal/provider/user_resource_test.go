@@ -11,7 +11,7 @@ import (
 func TestAccResourceUser(t *testing.T) {
   resource.Test(t, resource.TestCase{
     ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error) {
-      "wordpress": providerserver.NewProtocol6WithError(New()),
+      "wordpress": providerserver.NewProtocol6WithError(New("test")()),
     },
     Steps: []resource.TestStep{
       {

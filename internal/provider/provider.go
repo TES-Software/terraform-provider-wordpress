@@ -86,12 +86,12 @@ func (p *wordpressProvider) Configure(ctx context.Context, req provider.Configur
       "configuration block password attribute.",
     )
   }
-  client := wcl.NewClient(&wcl.Options{
+  clientOptions := &wcl.Options{
     BaseAPIURL: endpoint,
     Username: user,
     Password: password,
-  })
-  resp.ResourceData = client
+  }
+  resp.ResourceData = clientOptions
 }
 
 func (p *wordpressProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {

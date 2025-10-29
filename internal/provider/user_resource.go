@@ -22,7 +22,7 @@ var (
 )
 
 type UserResource struct {
-  client *wcl.Client
+  clientOptions *wcl.Options
 }
 
 type UserResourceModel struct {
@@ -47,17 +47,22 @@ func (u *UserResource) Configure(ctx context.Context, req resource.ConfigureRequ
     return
   }
 
-  client, ok := req.ProviderData.(*wcl.Client)
+  clientOptions, ok := req.ProviderData.(*wcl.Options)
 
   if !ok {
     resp.Diagnostics.AddError(
       "Unexpected Resource Configure Type",
-      fmt.Sprintf("Expected Client, got: %T. Please report this issue to the developer", req.ProviderData),
+      fmt.Sprintf("Expected *wcl.Options, got: %T. Please report this issue to the developer", req.ProviderData),
     )
     return
   }
 
-  u.client = client
+  u.clientOptions = clientOptions
+}
+
+// newClient creates a new WordPress client for each operation to avoid concurrency issues
+func (u *UserResource) newClient() *wcl.Client {
+  return wcl.NewClient(u.clientOptions)
 }
 
 func (u *UserResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -150,7 +155,8 @@ func (u *UserResource) Create(ctx context.Context, req resource.CreateRequest, r
     requ.Name = data.Name.ValueString()
   }
 
-  wu, _, _, err := u.client.Users().Create(requ)
+  client := u.newClient()
+  wu, _, _, err := client.Users().Create(requ)
 
   if err != nil {
     resp.Diagnostics.AddError(
@@ -174,7 +180,8 @@ func (u *UserResource) Delete(ctx context.Context, req resource.DeleteRequest, r
   resp.Diagnostics.Append(resp.State.Get(ctx, &data)...)
 
   iid, _ := strconv.Atoi(data.ID.ValueString())
-  u.client.Users().Delete(int(iid), nil)
+  client := u.newClient()
+  client.Users().Delete(int(iid), nil)
 }
 
 func (u *UserResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -182,7 +189,8 @@ func (u *UserResource) Read(ctx context.Context, req resource.ReadRequest, resp 
   resp.Diagnostics.Append(resp.State.Get(ctx, &data)...)
 
   iid, _ := strconv.Atoi(data.ID.ValueString())
-  wu, _, _, err := u.client.Users().Get(int(iid), "context=edit")
+  client := u.newClient()
+  wu, _, _, err := client.Users().Get(int(iid), "context=edit")
 
   if err != nil {
     resp.Diagnostics.AddError(
@@ -210,7 +218,8 @@ func (u *UserResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
   iid, _ := strconv.Atoi(data.ID.ValueString())
 
-  wu, _, _, err := u.client.Users().Update(int(iid), &wcl.User{
+  client := u.newClient()
+  wu, _, _, err := client.Users().Update(int(iid), &wcl.User{
     Email: data.Email.ValueString(),
     Name: data.Name.ValueString(),
     Password: data.Password.ValueString(),

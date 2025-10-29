@@ -5,7 +5,7 @@ import (
   "log"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/yyamanoi1222/terraform-provider-wordpress/internal/provider"
+	"github.com/tes-software/terraform-provider-wordpress/internal/provider"
 )
 
 // Generate the Terraform provider documentation using `tfplugindocs`:
@@ -17,7 +17,7 @@ var (
 
 func main() {
   err :=providerserver.Serve(context.Background(), provider.New(version), providerserver.ServeOpts{
-    Address: "registry.terrafomr.io/yyamanoi1222/wordpress",
+    Address: "registry.terraform.io/tes-software/wordpress",
   })
 
   if err != nil {
